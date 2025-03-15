@@ -94,8 +94,8 @@ class GameNode:
         if self.player == 1:
             result_EPF = EPF(None)
             for child in self.children:
-                result_EPF = result_EPF.find_concave_envelope(child.get_EPF())
-            result_EPF = result_EPF.left_truncate(self.get_grim_value())
+                child_threshold = max([other_child.get_grim_value() for other_child in self.children if other_child != child])
+                result_EPF = result_EPF.find_concave_envelope(child.get_EPF().left_truncate(child_threshold))
             self.EPF = result_EPF
         return self.EPF
     
@@ -123,8 +123,23 @@ def prisoners_dilemma():
 
     return root
 
-game = prisoners_dilemma()
-# print(game.get_EPF().knots)
-# print(game.get_grim_value())
+# define chiken game
+def chicken():
+    root = GameNode(player=1, is_root=True)
+    c1 = GameNode(player=0)
+    c2 = GameNode(player=0)
+    l1 = GameNode(player=-1, payoff=(0, 0))
+    l2 = GameNode(player=-1, payoff=(1, -1))
+    l3 = GameNode(player=-1, payoff=(-1, 1))
+    l4 = GameNode(player=-1, payoff=(-100, -100))
+    root.add_child(c1)
+    root.add_child(c2)
+    c1.add_child(l1)
+    c1.add_child(l2)
+    c2.add_child(l3)
+    c2.add_child(l4)
+    return root
+
+game = chicken()
 game.draw_EPF()
 plt.show()
