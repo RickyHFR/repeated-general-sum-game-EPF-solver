@@ -99,9 +99,16 @@ class GameNode:
         ax.set_xlim(x_min, x_max)
         ax.set_ylim(y_min, y_max)
 
+        # Label axes once
+        ax.set_xlabel("Follower")
+        ax.set_ylabel("Leader")
+
         # Initialize plot with depth 0
         initial_EPF = dict_EPF[(self, 0)]
         line, = ax.plot(initial_EPF.knots[:, 0], initial_EPF.knots[:, 1], marker='o')
+
+        # Set initial title
+        ax.set_title("EPF at depth 0")
 
         # Initialize text labels (store in a list to manage removal)
         text_labels = []
@@ -122,6 +129,9 @@ class GameNode:
             # Add new text labels
             for x, y in EPF_i.knots:
                 text_labels.append(ax.text(x, y, f'({x:.2f}, {y:.2f})', fontsize=9, ha='right'))
+
+            # Update the plot title to reflect current depth
+            ax.set_title(f"EPF at depth {depth}")
 
             fig.canvas.draw_idle()  # Efficient redraw
 
