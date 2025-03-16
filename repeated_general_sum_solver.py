@@ -6,8 +6,8 @@ from GameNode import GameNode
 
 # define a simple prisoner's dilemma game
 def prisoners_dilemma():
-    root = GameNode(player=1, max_depth=0)
-    c1 = GameNode(player=1)
+    root = GameNode(player=1, max_depth=200)
+    c1 = GameNode(player=0)
     c2 = GameNode(player=0)
     l1 = GameNode(player=-1, payoff=(4, 4))
     l2 = GameNode(player=-1, payoff=(10, 0))

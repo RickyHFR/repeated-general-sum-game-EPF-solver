@@ -3,6 +3,7 @@ from typing import Union
 from matplotlib import pyplot as plt
 import numpy as np
 from EPF import EPF
+from matplotlib.widgets import Slider
 
 class GameNode:
     def __init__(self,
@@ -68,12 +69,36 @@ class GameNode:
                     result_EPF = result_EPF.left_truncate(child_threshold)
                 self.root.EPF_memoization[self, curr_depth] = result_EPF
             return self.root.EPF_memoization[self, curr_depth]
+        
+    def solve_EPF(self):
+        if self.root.EPF_memoization.get((self, 0)) is None:
+            self.get_EPF()
+        return self.root.EPF_memoization[(self, 0)]
+    
+    def solve_grim(self):
+        if self.root.grim_memoization.get((self, 0)) is None:
+            self.get_grim_value()
+        return self.root.grim_memoization[(self, 0)]
     
     def draw_EPF(self):
         if self.root.EPF_memoization.get((self, 0)) is None:
             self.get_EPF()
         dict_EPF = self.root.EPF_memoization
-        for i in range(self.root.max_depth + 1):
-            EPF_i = dict_EPF[(self, i)]
-            plt.plot(EPF_i.knots[:, 0], EPF_i.knots[:, 1])
+
+        fig, ax = plt.subplots()
+        plt.subplots_adjust(left=0.1, bottom=0.25)
+        depth_slider_ax = plt.axes([0.1, 0.1, 0.8, 0.03], facecolor='lightgoldenrodyellow')
+        depth_slider = Slider(depth_slider_ax, 'Depth', 0, self.root.max_depth, valinit=0, valstep=1)
+
+        def update(val):
+            ax.clear()
+            depth = int(depth_slider.val)
+            EPF_i = dict_EPF[(self, depth)]
+            ax.plot(EPF_i.knots[:, 0], EPF_i.knots[:, 1], marker='o')
+            for x, y in EPF_i.knots:
+                ax.text(x, y, f'({x:.2f}, {y:.2f})', fontsize=9, ha='right')
+            fig.canvas.draw_idle()
+
+        depth_slider.on_changed(update)
+        update(0)
         plt.show()
