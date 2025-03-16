@@ -120,10 +120,14 @@ class GameNode:
 
 class ReapeatedGameNode(GameNode):
     def __init__(self, player: int, payoff: Union[tuple[float, float], EPF] = None, is_root = False, discount_factor: float = 0.9,
-                 max_depth: int = 0):
+                 max_depth: int = 7):
         super().__init__(player, payoff, is_root)
         self.discount_factor = discount_factor
         self.max_depth = max_depth
+        self.root = None
+
+    def set_root(self, root):
+        self.root = root
 
     def get_grim_value(self, curr_depth = 0):
         if self.grim_value is not None:
@@ -131,7 +135,7 @@ class ReapeatedGameNode(GameNode):
         if self.player == -1 and curr_depth == self.max_depth:
             self.grim_value = self.payoff[0] * self.discount_factor ** curr_depth
         elif self.player == -1 and curr_depth < self.max_depth:
-            self.grim_value = self.payoff[0] * self.discount_factor ** curr_depth + self.get_grim_value(curr_depth + 1) * self.discount_factor ** (curr_depth + 1)
+            self.grim_value = self.payoff[0] * self.discount_factor ** curr_depth + self.root.get_grim_value(curr_depth + 1) * self.discount_factor ** (curr_depth + 1)
         elif self.player == 0:
             self.grim_value = min([child.get_grim_value(curr_depth) for child in self.children])
         else:
@@ -142,26 +146,24 @@ class ReapeatedGameNode(GameNode):
         if self.player == -1 and curr_depth == self.max_depth:
             return EPF(np.array([[self.payoff[0], self.payoff[1]]])).shift_and_scale((0, 0), self.discount_factor ** curr_depth)
         elif self.player == -1 and curr_depth < self.max_depth:
-            return self.get_EPF(curr_depth + 1).shift_and_scale(
+            return self.root.get_EPF(curr_depth + 1).shift_and_scale(
                 (self.payoff[0] * self.discount_factor ** curr_depth, self.payoff[1] * self.discount_factor ** curr_depth),
                 self.discount_factor)
         if self.player == 0:
             result_EPF = EPF(None)
             for child in self.children:
                 result_EPF = result_EPF.find_concave_envelope(child.get_EPF(curr_depth))
-            # print(result_EPF.knots)
             return result_EPF
         if self.player == 1:
             result_EPF = EPF(None)
             for child in self.children:
                 child_threshold = max([other_child.get_grim_value(curr_depth) for other_child in self.children if other_child != child])
-                result_EPF = result_EPF.find_concave_envelope(child.get_EPF(curr_depth).left_truncate(child_threshold))
-            print (result_EPF.knots)
+                result_EPF = result_EPF.find_concave_envelope(child.get_EPF(curr_depth))
+                result_EPF = result_EPF.left_truncate(child_threshold)
             return result_EPF
         
     def draw_EPF(self):
         EPF = self.get_EPF()
-        print(EPF.knots)
         plt.plot(EPF.knots[:, 0], EPF.knots[:, 1])
 
 
@@ -187,8 +189,8 @@ def iterated_prisoners_dilemma():
     c1 = ReapeatedGameNode(player=0)
     c2 = ReapeatedGameNode(player=0)
     l1 = ReapeatedGameNode(player=-1, payoff=(4, 4))
-    l2 = ReapeatedGameNode(player=-1, payoff=(0, 10))
-    l3 = ReapeatedGameNode(player=-1, payoff=(10, 0))
+    l2 = ReapeatedGameNode(player=-1, payoff=(10, 0))
+    l3 = ReapeatedGameNode(player=-1, payoff=(0, 10))
     l4 = ReapeatedGameNode(player=-1, payoff=(9, 9))
     root.add_child(c1)
     root.add_child(c2)
@@ -196,6 +198,13 @@ def iterated_prisoners_dilemma():
     c1.add_child(l2)
     c2.add_child(l3)
     c2.add_child(l4)
+    root.set_root(root)
+    c1.set_root(root)
+    c2.set_root(root)
+    l1.set_root(root)
+    l2.set_root(root)
+    l3.set_root(root)
+    l4.set_root(root)
     return root
 
 game = iterated_prisoners_dilemma()
