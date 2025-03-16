@@ -9,8 +9,8 @@ class GameNode:
     def __init__(self,
                  player: int,
                  payoff: Union[tuple[float, float], EPF] = None,
-                 discount_factor: float=0.9,
-                 max_depth: int=50):
+                 discount_factor: float=1,
+                 max_depth: int=0):
         self.player = player       
         self.payoff = payoff       
         self.parent = None
@@ -37,9 +37,9 @@ class GameNode:
             return self.root.grim_memoization[(self, curr_depth)]
         else:
             if self.player == -1 and curr_depth == self.root.max_depth:
-                self.root.grim_memoization[(self, curr_depth)] = self.payoff[0] * self.discount_factor ** curr_depth
+                self.root.grim_memoization[(self, curr_depth)] = self.payoff[0] * self.root.discount_factor ** curr_depth
             elif self.player == -1 and curr_depth < self.root.max_depth:
-                self.root.grim_memoization[(self, curr_depth)] = self.payoff[0] * self.discount_factor ** curr_depth + self.root.get_grim_value(curr_depth + 1) * self.discount_factor ** (curr_depth + 1)
+                self.root.grim_memoization[(self, curr_depth)] = self.payoff[0] * self.root.discount_factor ** curr_depth + self.root.get_grim_value(curr_depth + 1) * self.root.discount_factor ** (curr_depth + 1)
             elif self.player == 0:
                 self.root.grim_memoization[(self, curr_depth)] = min([child.get_grim_value(curr_depth) for child in self.children])
             else:
@@ -51,11 +51,11 @@ class GameNode:
             return self.root.EPF_memoization[(self, curr_depth)]
         else:
             if self.player == -1 and curr_depth == self.root.max_depth:
-                self.root.EPF_memoization[self, curr_depth] = EPF(np.array([[self.payoff[0], self.payoff[1]]])).scale_then_shift((0, 0), self.discount_factor ** curr_depth)
+                self.root.EPF_memoization[self, curr_depth] = EPF(np.array([[self.payoff[0], self.payoff[1]]])).scale_then_shift((0, 0), self.root.discount_factor ** curr_depth)
             elif self.player == -1 and curr_depth < self.root.max_depth:
                 self.root.EPF_memoization[self, curr_depth] = self.root.get_EPF(curr_depth + 1).scale_then_shift(
-                    (self.payoff[0] * self.discount_factor ** curr_depth, self.payoff[1] * self.discount_factor ** curr_depth),
-                    self.discount_factor)
+                    (self.payoff[0] * self.root.discount_factor ** curr_depth, self.payoff[1] * self.root.discount_factor ** curr_depth),
+                    self.root.discount_factor)
             if self.player == 0:
                 result_EPF = EPF(None)
                 for child in self.children:
