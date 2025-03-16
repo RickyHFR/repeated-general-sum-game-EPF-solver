@@ -87,53 +87,80 @@ class GameNode:
 
         dict_EPF = self.root.EPF_memoization
 
-        fig, ax = plt.subplots()
+        # Create a figure with two subplots: main plot (left) and table (right)
+        fig, (ax_main, ax_table) = plt.subplots(ncols=2,
+                                                gridspec_kw={'width_ratios': [3, 1]},
+                                                figsize=(14, 8))
         plt.subplots_adjust(left=0.1, bottom=0.25)
+
+        # Create slider axes (placed at the bottom across the full figure width)
         depth_slider_ax = plt.axes([0.1, 0.1, 0.8, 0.03], facecolor='lightgoldenrodyellow')
         depth_slider = Slider(depth_slider_ax, 'Depth', 0, self.root.max_depth, valinit=0, valstep=1)
 
-        # Compute global axis limits
+        # Compute global axis limits for the main plot
         all_knots = np.vstack([epf.knots for epf in dict_EPF.values()])
         x_min, x_max = np.min(all_knots[:, 0]), np.max(all_knots[:, 0])
         y_min, y_max = np.min(all_knots[:, 1]), np.max(all_knots[:, 1])
-        ax.set_xlim(x_min, x_max)
-        ax.set_ylim(y_min, y_max)
+        ax_main.set_xlim(x_min, x_max)
+        ax_main.set_ylim(y_min, y_max)
 
-        # Label axes once
-        ax.set_xlabel("Follower")
-        ax.set_ylabel("Leader")
+        # Set axis labels and an initial title for the main plot
+        ax_main.set_xlabel("Follower")
+        ax_main.set_ylabel("Leader")
+        ax_main.set_title("EPF at depth 0")
 
-        # Initialize plot with depth 0
+        # Turn off the table axes (frame, ticks, etc.)
+        ax_table.axis('off')
+
+        # Initialize main plot with depth 0
         initial_EPF = dict_EPF[(self, 0)]
-        line, = ax.plot(initial_EPF.knots[:, 0], initial_EPF.knots[:, 1], marker='o')
+        line, = ax_main.plot(initial_EPF.knots[:, 0],
+                            initial_EPF.knots[:, 1],
+                            marker='o')
 
-        # Set initial title
-        ax.set_title("EPF at depth 0")
-
-        # Initialize text labels (store in a list to manage removal)
+        # Initialize text labels for the main plot (to annotate each point)
         text_labels = []
+        
+        # Variable to hold the table object (for removal/updating)
+        table_obj = None
 
         def update(val):
+            nonlocal table_obj
             depth = int(depth_slider.val)
             EPF_i = dict_EPF[(self, depth)]
             
-            # Update line data instead of re-plotting
+            # Update the main plot line
             line.set_xdata(EPF_i.knots[:, 0])
             line.set_ydata(EPF_i.knots[:, 1])
-
-            # Remove old text labels properly
+            
+            # Remove old text labels
             while text_labels:
                 label = text_labels.pop()
                 label.remove()
-
-            # Add new text labels
+                
+            # Add new text labels at each point on the main plot
             for x, y in EPF_i.knots:
-                text_labels.append(ax.text(x, y, f'({x:.2f}, {y:.2f})', fontsize=9, ha='right'))
+                text_labels.append(ax_main.text(x, y, f'({x:.2f}, {y:.2f})',
+                                                fontsize=9, ha='right'))
+            
+            # Update the title with current depth
+            ax_main.set_title(f"EPF at depth {depth}")
 
-            # Update the plot title to reflect current depth
-            ax.set_title(f"EPF at depth {depth}")
+            # Update the table on the right-hand side with increased precision (4 decimals)
+            if table_obj is not None:
+                table_obj.remove()  # Remove the previous table
+            data = [[f"{x:.4f}", f"{y:.4f}"] for x, y in EPF_i.knots]
+            table_obj = ax_table.table(cellText=data,
+                                    colLabels=["Follower", "Leader"],
+                                    loc='center')
+            # Optional formatting for the table
+            table_obj.auto_set_font_size(False)
+            table_obj.set_fontsize(10)
+            table_obj.scale(1, 1.5)
 
-            fig.canvas.draw_idle()  # Efficient redraw
+            fig.canvas.draw_idle()  # Refresh the figure
 
         depth_slider.on_changed(update)
         plt.show()
+
+
