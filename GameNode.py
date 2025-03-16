@@ -81,8 +81,10 @@ class GameNode:
         return self.root.grim_memoization[(self, 0)]
     
     def draw_EPF(self):
+        # Ensure all EPF values are precomputed
         if self.root.EPF_memoization.get((self, 0)) is None:
-            self.get_EPF()
+            self.get_EPF()  # Precompute all required EPF values
+
         dict_EPF = self.root.EPF_memoization
 
         fig, ax = plt.subplots()
@@ -90,15 +92,38 @@ class GameNode:
         depth_slider_ax = plt.axes([0.1, 0.1, 0.8, 0.03], facecolor='lightgoldenrodyellow')
         depth_slider = Slider(depth_slider_ax, 'Depth', 0, self.root.max_depth, valinit=0, valstep=1)
 
+        # Compute global axis limits
+        all_knots = np.vstack([epf.knots for epf in dict_EPF.values()])
+        x_min, x_max = np.min(all_knots[:, 0]), np.max(all_knots[:, 0])
+        y_min, y_max = np.min(all_knots[:, 1]), np.max(all_knots[:, 1])
+        ax.set_xlim(x_min, x_max)
+        ax.set_ylim(y_min, y_max)
+
+        # Initialize plot with depth 0
+        initial_EPF = dict_EPF[(self, 0)]
+        line, = ax.plot(initial_EPF.knots[:, 0], initial_EPF.knots[:, 1], marker='o')
+
+        # Initialize text labels (store in a list to manage removal)
+        text_labels = []
+
         def update(val):
-            ax.clear()
             depth = int(depth_slider.val)
             EPF_i = dict_EPF[(self, depth)]
-            ax.plot(EPF_i.knots[:, 0], EPF_i.knots[:, 1], marker='o')
+            
+            # Update line data instead of re-plotting
+            line.set_xdata(EPF_i.knots[:, 0])
+            line.set_ydata(EPF_i.knots[:, 1])
+
+            # Remove old text labels properly
+            while text_labels:
+                label = text_labels.pop()
+                label.remove()
+
+            # Add new text labels
             for x, y in EPF_i.knots:
-                ax.text(x, y, f'({x:.2f}, {y:.2f})', fontsize=9, ha='right')
-            fig.canvas.draw_idle()
+                text_labels.append(ax.text(x, y, f'({x:.2f}, {y:.2f})', fontsize=9, ha='right'))
+
+            fig.canvas.draw_idle()  # Efficient redraw
 
         depth_slider.on_changed(update)
-        update(0)
         plt.show()
