@@ -1,5 +1,9 @@
 from GameNode import GameNode
 
+LEADER = 0
+FOLLOWER = 1
+LEAF = -1
+
 # define a game
 def game_structure():
     # only need to set max_depth & discount factor for the root node if the game is iterated
@@ -8,15 +12,15 @@ def game_structure():
     # root = GameNode(player=1)
 
     # iterated game
-    root = GameNode(player=1, discount_factor=0.9, max_depth=50) 
+    root = GameNode(player=FOLLOWER, discount_factor=0.9, max_depth=50) 
     
     # create the rest of the game tree
-    c1 = GameNode(player=0)
-    c2 = GameNode(player=0)
-    l1 = GameNode(player=-1, payoff=(4, 4))
-    l2 = GameNode(player=-1, payoff=(10, 0))
-    l3 = GameNode(player=-1, payoff=(0, 10))
-    l4 = GameNode(player=-1, payoff=(9, 9))
+    c1 = GameNode(player=LEADER)
+    c2 = GameNode(player=LEADER)
+    l1 = GameNode(player=LEAF, payoff=(4, 4))
+    l2 = GameNode(player=LEAF, payoff=(10, 0))
+    l3 = GameNode(player=LEAF, payoff=(0, 10))
+    l4 = GameNode(player=LEAF, payoff=(9, 9))
 
     # connect the nodes
     root.add_child(c1)
