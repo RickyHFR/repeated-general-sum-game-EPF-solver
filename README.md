@@ -2,7 +2,7 @@
 
 ## 1. Define a Game
 1. **Create a root node** (and indicate the maximum depth and discount factor if the game is iterated).
-2. **Create all remaining nodes** for the game tree. For all leaf nodes, indicate their payoff in the form (follower payoff, leader payoff).
+2. **Create all remaining nodes** for the game tree. For all leaf nodes, indicate their payoff in the form **(follower payoff, leader payoff)**.
 3. **Connect the game nodes** by calling `add_child` on parents.
 4. **Set ALL game nodes** (including the root itself) to be the root by calling the function `set_root` on the root.
 
