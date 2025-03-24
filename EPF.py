@@ -3,10 +3,11 @@ from scipy.spatial import ConvexHull
 
 class EPF:
     def __init__(self, knots: np.ndarray):
-        self.knots = knots
+        # Convert knots to high-precision if not None
+        self.knots = np.array(knots, dtype=np.longdouble) if knots is not None else None
 
     def left_truncate(self, threshold):
-        idx = np.searchsorted(self.knots[:, 0], threshold, side='left')
+        idx = np.searchsorted(self.knots[:, 0], np.longdouble(threshold), side='left')
         if idx == 0:
             return self
         elif idx == self.knots.shape[0]:
@@ -14,8 +15,8 @@ class EPF:
         else:
             x1, y1 = self.knots[idx - 1]
             x2, y2 = self.knots[idx]
-            y = y1 + (y2 - y1) / (x2 - x1) * (threshold - x1)
-            return EPF(np.concatenate((np.array([[threshold, y]]), self.knots[idx:]), axis=0))
+            y = y1 + (y2 - y1) / (x2 - x1) * (np.longdouble(threshold) - x1)
+            return EPF(np.concatenate((np.array([[np.longdouble(threshold), y]], dtype=np.longdouble), self.knots[idx:]), axis=0))
 
     def find_concave_envelope(self, target_EPF: 'EPF'):
         if target_EPF is None or target_EPF.knots is None:
@@ -43,8 +44,8 @@ class EPF:
     def scale_then_shift(self, shift: tuple[float, float], scale: float):
         if self.knots is None:
             return self
-        shift_vector = np.array(shift)
-        return EPF(self.knots * scale + shift_vector)
+        shift_vector = np.array(shift, dtype=np.longdouble)
+        return EPF(self.knots * np.longdouble(scale) + shift_vector)
     
     def min_follower_payoff(self):
         return self.knots[0, 0]

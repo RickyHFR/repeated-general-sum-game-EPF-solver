@@ -15,7 +15,7 @@ class GameNode:
         self.payoff = payoff       
         self.parent = None
         self.children = []        
-        self.discount_factor = discount_factor
+        self.discount_factor = np.longdouble(discount_factor)  # changed for high precision
         self.max_depth = max_depth
         self.root = None
         self.grim_memoization = {}
@@ -37,9 +37,9 @@ class GameNode:
             return self.root.grim_memoization[(self, curr_depth)]
         else:
             if self.player == -1 and curr_depth == self.root.max_depth:
-                self.root.grim_memoization[(self, curr_depth)] = self.payoff[0] * self.root.discount_factor ** curr_depth
+                self.root.grim_memoization[(self, curr_depth)] = self.payoff[0]
             elif self.player == -1 and curr_depth < self.root.max_depth:
-                self.root.grim_memoization[(self, curr_depth)] = self.payoff[0] * self.root.discount_factor ** curr_depth + self.root.get_grim_value(curr_depth + 1) * self.root.discount_factor ** (curr_depth + 1)
+                self.root.grim_memoization[(self, curr_depth)] = self.payoff[0] + self.root.get_grim_value(curr_depth + 1) * self.root.discount_factor
             elif self.player == 0:
                 self.root.grim_memoization[(self, curr_depth)] = min([child.get_grim_value(curr_depth) for child in self.children])
             else:
@@ -51,10 +51,10 @@ class GameNode:
             return self.root.EPF_memoization[(self, curr_depth)]
         else:
             if self.player == -1 and curr_depth == self.root.max_depth:
-                self.root.EPF_memoization[self, curr_depth] = EPF(np.array([[self.payoff[0], self.payoff[1]]])).scale_then_shift((0, 0), self.root.discount_factor ** curr_depth)
+                self.root.EPF_memoization[self, curr_depth] = EPF(np.array([[self.payoff[0], self.payoff[1]]])).scale_then_shift((0, 0), 1)
             elif self.player == -1 and curr_depth < self.root.max_depth:
                 self.root.EPF_memoization[self, curr_depth] = self.root.get_EPF(curr_depth + 1).scale_then_shift(
-                    (self.payoff[0] * self.root.discount_factor ** curr_depth, self.payoff[1] * self.root.discount_factor ** curr_depth),
+                    (self.payoff[0], self.payoff[1]),
                     self.root.discount_factor)
             if self.player == 0:
                 result_EPF = EPF(None)
@@ -166,7 +166,7 @@ class GameNode:
             # Update the table on the right-hand side with increased precision (4 decimals)
             if table_obj is not None:
                 table_obj.remove()  # Remove the previous table
-            data = [[f"{x:.4f}", f"{y:.4f}"] for x, y in EPF_i.knots]
+            data = [[f"{x:.8f}", f"{y:.8f}"] for x, y in EPF_i.knots]
             table_obj = ax_table.table(cellText=data,
                                     colLabels=["Follower", "Leader"],
                                     loc='center')

@@ -1,3 +1,6 @@
+import sys
+sys.setrecursionlimit(3000)
+
 from GameNode import GameNode
 
 LEADER = 0
@@ -12,7 +15,7 @@ def game_structure():
     # root = GameNode(player=1)
 
     # iterated game
-    root = GameNode(player=FOLLOWER, discount_factor=0.9, max_depth=50) 
+    root = GameNode(player=FOLLOWER, discount_factor=0.9, max_depth=100) 
     
     # create the rest of the game tree
     c1 = GameNode(player=LEADER)
