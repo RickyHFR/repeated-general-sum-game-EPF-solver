@@ -15,15 +15,15 @@ def game_structure():
     # root = GameNode(player=1)
 
     # iterated game
-    root = GameNode(player=FOLLOWER, discount_factor=0.9, max_depth=100) 
+    root = GameNode(player=FOLLOWER, discount_factor=0.9, max_depth=300) 
     
     # create the rest of the game tree
     c1 = GameNode(player=LEADER)
     c2 = GameNode(player=LEADER)
-    l1 = GameNode(player=LEAF, payoff=(4, 4))
-    l2 = GameNode(player=LEAF, payoff=(10, 0))
-    l3 = GameNode(player=LEAF, payoff=(0, 10))
-    l4 = GameNode(player=LEAF, payoff=(9, 9))
+    l1 = GameNode(player=LEAF, payoff=(9, 9))
+    l2 = GameNode(player=LEAF, payoff=(8, 10))
+    l3 = GameNode(player=LEAF, payoff=(10, 8))
+    l4 = GameNode(player=LEAF, payoff=(0, 0))
 
     # connect the nodes
     root.add_child(c1)
