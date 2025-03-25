@@ -7,16 +7,22 @@ class EPF:
         self.knots = np.array(knots, dtype=np.longdouble) if knots is not None else None
 
     def left_truncate(self, threshold):
+        print(f"Left truncating {self.knots} at threshold: {threshold}")
         idx = np.searchsorted(self.knots[:, 0], np.longdouble(threshold), side='left')
+        print(f"Index found: {idx}")
         if idx == 0:
             return self
         elif idx == self.knots.shape[0]:
             return EPF(None)
         else:
-            x1, y1 = self.knots[idx - 1]
-            x2, y2 = self.knots[idx]
-            y = y1 + (y2 - y1) / (x2 - x1) * (np.longdouble(threshold) - x1)
-            return EPF(np.concatenate((np.array([[np.longdouble(threshold), y]], dtype=np.longdouble), self.knots[idx:]), axis=0))
+            if self.knots[idx, 0] == np.longdouble(threshold):
+                return EPF(self.knots[idx:])
+            else:
+                # Interpolate to find the y value at the threshold
+                x1, y1 = self.knots[idx - 1]
+                x2, y2 = self.knots[idx]
+                y = y1 + (y2 - y1) / (x2 - x1) * (np.longdouble(threshold) - x1)
+                return EPF(np.concatenate((np.array([[np.longdouble(threshold), y]], dtype=np.longdouble), self.knots[idx:]), axis=0))
 
     def find_concave_envelope(self, target_EPF: 'EPF'):
         if target_EPF is None or target_EPF.knots is None:

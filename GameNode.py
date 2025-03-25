@@ -52,6 +52,7 @@ class GameNode:
         else:
             if self.player == -1 and curr_depth == self.root.max_depth:
                 self.root.EPF_memoization[self, curr_depth] = EPF(np.array([[self.payoff[0], self.payoff[1]]])).scale_then_shift((0, 0), 1)
+                print("Leaf EPF computed:", self.root.EPF_memoization[self, curr_depth].knots)
             elif self.player == -1 and curr_depth < self.root.max_depth:
                 self.root.EPF_memoization[self, curr_depth] = self.root.get_EPF(curr_depth + 1).scale_then_shift(
                     (self.payoff[0], self.payoff[1]),
@@ -61,6 +62,7 @@ class GameNode:
                 for child in self.children:
                     result_EPF = result_EPF.find_concave_envelope(child.get_EPF(curr_depth))
                 self.root.EPF_memoization[self, curr_depth] = result_EPF
+                print("Leader EPF computed:", self.root.EPF_memoization[self, curr_depth].knots)
             if self.player == 1:
                 result_EPF = EPF(None)
                 for child in self.children:
@@ -68,6 +70,7 @@ class GameNode:
                     result_EPF = result_EPF.find_concave_envelope(child.get_EPF(curr_depth))
                     result_EPF = result_EPF.left_truncate(child_threshold)
                 self.root.EPF_memoization[self, curr_depth] = result_EPF
+                print("Follower EPF computed:", self.root.EPF_memoization[self, curr_depth].knots)
             return self.root.EPF_memoization[self, curr_depth]
         
     def solve_EPF(self):

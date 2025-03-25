@@ -15,7 +15,7 @@ def game_structure():
     # root = GameNode(player=1)
 
     # iterated game
-    root = GameNode(player=FOLLOWER, discount_factor=0.9, max_depth=300) 
+    root = GameNode(player=FOLLOWER, discount_factor=0.9, max_depth=100) 
     
     # create the rest of the game tree
     c1 = GameNode(player=LEADER)
