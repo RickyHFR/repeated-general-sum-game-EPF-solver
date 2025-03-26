@@ -17,13 +17,21 @@ def game_structure():
     # iterated game
     root = GameNode(player=FOLLOWER, discount_factor=0.9, max_depth=100) 
     
-    # create the rest of the game tree
+    # chicken game
     c1 = GameNode(player=LEADER)
     c2 = GameNode(player=LEADER)
     l1 = GameNode(player=LEAF, payoff=(9, 9))
     l2 = GameNode(player=LEAF, payoff=(8, 10))
     l3 = GameNode(player=LEAF, payoff=(10, 8))
     l4 = GameNode(player=LEAF, payoff=(0, 0))
+
+    # prisoner's dilemma
+    # c1 = GameNode(player=LEADER)
+    # c2 = GameNode(player=LEADER)
+    # l1 = GameNode(player=LEAF, payoff=(3, 3))
+    # l2 = GameNode(player=LEAF, payoff=(0, 5))
+    # l3 = GameNode(player=LEAF, payoff=(5, 0))
+    # l4 = GameNode(player=LEAF, payoff=(1, 1))
 
     # connect the nodes
     root.add_child(c1)

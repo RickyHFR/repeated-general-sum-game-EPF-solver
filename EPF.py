@@ -7,9 +7,7 @@ class EPF:
         self.knots = np.array(knots, dtype=np.longdouble) if knots is not None else None
 
     def left_truncate(self, threshold):
-        print(f"Left truncating {self.knots} at threshold: {threshold}")
         idx = np.searchsorted(self.knots[:, 0], np.longdouble(threshold), side='left')
-        print(f"Index found: {idx}")
         if idx == 0:
             return self
         elif idx == self.knots.shape[0]:
@@ -38,12 +36,14 @@ class EPF:
         hull_points = points[hull.vertices]
         hull_points = hull_points[np.argsort(hull_points[:, 0])]
         upper_hull = []
+        tol = np.longdouble(1e-15)  # tolerance for precision issues
         for p in hull_points:
             while len(upper_hull) >= 2:
-                p1, p2 = upper_hull[-2], upper_hull[-1]
-                if np.cross(p2 - p1, p - p2) < 0:
+                cross_val = np.cross(upper_hull[-1] - upper_hull[-2], p - upper_hull[-1])
+                if cross_val >= -tol:
+                    upper_hull.pop()
+                else:
                     break
-                upper_hull.pop()
             upper_hull.append(p)
         return EPF(np.array(upper_hull))
     
